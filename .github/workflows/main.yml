@@ -80,7 +80,6 @@ jobs:
       with:
         context: .
         push: true
-        # Make sure your username and repo name match exactly (case-sensitive)
         tags: ghcr.io/akash66taa/devopsproject:latest
 
   # ------------------------
@@ -111,7 +110,7 @@ jobs:
 
         # Ensure Terraform Installed
         if (-Not (Get-Command terraform -ErrorAction SilentlyContinue)) {
-          Write-Host "Terraform not found — installing via Chocolatey..."
+          Write-Host "Terraform not found - installing via Chocolatey..."
           choco install terraform -y
 
           # Add Terraform to PATH for current session
