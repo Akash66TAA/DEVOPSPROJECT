@@ -80,7 +80,7 @@ jobs:
       with:
         context: .
         push: true
-        tags: ghcr.io/akash66taa/devopsproject:latest
+        tags: ghcr.io/akash66taa/devops:latest
 
   # ------------------------
   # JOB 3: Deploy with Terraform
@@ -97,7 +97,7 @@ jobs:
     - name: Deploy using Terraform
       shell: powershell
       run: |
-        $terraformPath = "C:\Users\AKASH\OneDrive\Desktop\DEVOPSPROJECT\terraform"
+        $terraformPath = "C:\Users\AKASH\OneDrive\Desktop\DEVOPS\terraform"
 
         Write-Host "Checking for Terraform directory..."
         if (-Not (Test-Path $terraformPath)) {
