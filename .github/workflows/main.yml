@@ -1,68 +1,39 @@
 name: Local CI-CD Pipeline
-
+# ADD THESE THREE LINES:
 permissions:
   contents: read
   packages: write
-
+# This pipeline triggers when you merge a PR into the 'main' branch
 on:
   push:
     branches: [ main ]
 
 jobs:
-  # ------------------------
-  # JOB 1: Run Unit Tests
-  # ------------------------
+  # JOB 1: Run your tests
   test:
     name: Run Unit Tests
-    runs-on: self-hosted
+    runs-on: self-hosted # Tells GitHub to use your local runner
 
     steps:
     - name: Checkout code
       uses: actions/checkout@v3
 
-    - name: Verify Python installation
-      shell: pwsh
-      run: |
-        Write-Host "Checking if Python is already installed..."
-        if (-Not (Get-Command python -ErrorAction SilentlyContinue)) {
-          Write-Host "Python not found. Installing via Chocolatey..."
-          choco install python --version=3.10.0 -y
-        } else {
-          Write-Host "Python is already installed."
-        }
-        python --version
-
-    - name: Upgrade pip
-      shell: pwsh
-      run: python -m pip install --upgrade pip
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.10'
 
     - name: Install dependencies
-      shell: pwsh
-      run: |
-        if (Test-Path "requirements.txt") {
-          pip install -r requirements.txt
-        } else {
-          Write-Host "No requirements.txt found, skipping..."
-        }
+      run: pip install -r requirements.txt
 
     - name: Run tests
-      shell: pwsh
-      run: |
-        if (Get-Command pytest -ErrorAction SilentlyContinue) {
-          pytest
-        } else {
-          Write-Host "pytest not installed, installing now..."
-          pip install pytest
-          pytest
-        }
+      run: pytest
 
-  # ------------------------
-  # JOB 2: Build and Push Docker Image
-  # ------------------------
+  # JOB 2: Build and push the Docker image
   build-and-push:
     name: Build and Push Docker Image
     runs-on: self-hosted
-    needs: test
+    needs: test # This job only runs if the 'test' job succeeds
 
     steps:
     - name: Checkout code
@@ -73,37 +44,27 @@ jobs:
       with:
         registry: ghcr.io
         username: ${{ github.actor }}
-        password: ${{ secrets.GITHUB_TOKEN }}
+        password: ${{ secrets.GITHUB_TOKEN }} # This is a special, automatic secret
 
     - name: Build and push Docker image
       uses: docker/build-push-action@v4
       with:
         context: .
         push: true
-        # Make sure your username and repo name match exactly (case-sensitive)
-        tags: ghcr.io/akash66taa/devopsproject:latest
+        # Make sure your username is correct here
+        tags: ghcr.io/akash66TAA/dEVOPSPROJECT:latest
 
-  # ------------------------
-  # JOB 3: Deploy with Terraform
-  # ------------------------
+  # JOB 3: Deploy the new image to your Docker Swarm
   deploy:
     name: Deploy to Local Docker Swarm
     runs-on: self-hosted
-    needs: build-and-push
+    needs: build-and-push # This job only runs if 'build-and-push' succeeds
 
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v3
-
-    - name: Deploy using Terraform
-      shell: pwsh
+    - name: Deploy with Terraform
+      # Make sure this path is correct for your project
       run: |
-        $terraformPath = "C:\Users\AKASH\OneDrive\Desktop\DEVOPSPROJECT\terraform"
-        if (Test-Path $terraformPath) {
-          cd $terraformPath
-          terraform init -no-color
-          terraform apply -auto-approve -no-color
-        } else {
-          Write-Host "Terraform directory not found at $terraformPath"
-          exit 1
-        }
+        cd C:\Users\AKASH\OneDrive\Desktop\DEVOPSPROJECT\terraform
+        terraform init
+        terraform apply --auto-approve
+      #shell: pwsh
