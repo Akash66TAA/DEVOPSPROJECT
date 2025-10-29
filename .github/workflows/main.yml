@@ -87,23 +87,34 @@ jobs:
   # JOB 3: Deploy with Terraform
   # ------------------------
   deploy:
-    name: Deploy to Local Docker Swarm
-    runs-on: self-hosted
-    needs: build-and-push
+        - name: Deploy using Terraform
+          shell: powershell
+          run: |
+            $terraformPath = "C:\Users\AKASH\OneDrive\Desktop\DEVOPSPROJECT\terraform"
 
-    steps:
-    - name: Checkout code
-      uses: actions/checkout@v3
+            Write-Host "🔍 Checking for Terraform directory..."
+            if (-Not (Test-Path $terraformPath)) {
+              Write-Error "❌ Terraform directory not found at $terraformPath"
+              exit 1
+            }
 
-    - name: Deploy using Terraform
-      shell: powershell
-      run: |
-        $terraformPath = "C:\Users\AKASH\OneDrive\Desktop\DEVOPSPROJECT\terraform"
-        if (Test-Path $terraformPath) {
-          cd $terraformPath
-          terraform init -no-color
-          terraform apply -auto-approve -no-color
-        } else {
-          Write-Host "Terraform directory not found at $terraformPath"
-          exit 1
-        }
+            cd $terraformPath
+            Write-Host "📁 Current directory: $(Get-Location)"
+
+            # Check if Terraform is installed
+            if (-Not (Get-Command terraform -ErrorAction SilentlyContinue)) {
+              Write-Host "⚙️ Terraform not found — installing via Chocolatey..."
+              choco install terraform -y
+            }
+
+            Write-Host "✅ Terraform version:"
+            terraform -version
+
+            Write-Host "🚀 Initializing Terraform..."
+            terraform init -no-color
+
+            Write-Host "🚀 Applying Terraform configuration..."
+            terraform apply -auto-approve -no-color
+
+            Write-Host "🎉 Terraform deployment completed successfully!"
+
