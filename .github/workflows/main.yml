@@ -87,34 +87,41 @@ jobs:
   # JOB 3: Deploy with Terraform
   # ------------------------
   deploy:
-        - name: Deploy using Terraform
-          shell: powershell
-          run: |
-            $terraformPath = "C:\Users\AKASH\OneDrive\Desktop\DEVOPSPROJECT\terraform"
+    name: Deploy to Local Docker Swarm
+    runs-on: self-hosted
+    needs: build-and-push
 
-            Write-Host "🔍 Checking for Terraform directory..."
-            if (-Not (Test-Path $terraformPath)) {
-              Write-Error "❌ Terraform directory not found at $terraformPath"
-              exit 1
-            }
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v3
 
-            cd $terraformPath
-            Write-Host "📁 Current directory: $(Get-Location)"
+    - name: Deploy using Terraform
+      shell: powershell
+      run: |
+        $terraformPath = "C:\Users\AKASH\OneDrive\Desktop\DEVOPSPROJECT\terraform"
 
-            # Check if Terraform is installed
-            if (-Not (Get-Command terraform -ErrorAction SilentlyContinue)) {
-              Write-Host "⚙️ Terraform not found — installing via Chocolatey..."
-              choco install terraform -y
-            }
+        Write-Host "🔍 Checking for Terraform directory..."
+        if (-Not (Test-Path $terraformPath)) {
+          Write-Error "❌ Terraform directory not found at $terraformPath"
+          exit 1
+        }
 
-            Write-Host "✅ Terraform version:"
-            terraform -version
+        cd $terraformPath
+        Write-Host "📁 Current directory: $(Get-Location)"
 
-            Write-Host "🚀 Initializing Terraform..."
-            terraform init -no-color
+        # Check if Terraform is installed
+        if (-Not (Get-Command terraform -ErrorAction SilentlyContinue)) {
+          Write-Host "⚙️ Terraform not found — installing via Chocolatey..."
+          choco install terraform -y
+        }
 
-            Write-Host "🚀 Applying Terraform configuration..."
-            terraform apply -auto-approve -no-color
+        Write-Host "✅ Terraform version:"
+        terraform -version
 
-            Write-Host "🎉 Terraform deployment completed successfully!"
+        Write-Host "🚀 Initializing Terraform..."
+        terraform init -no-color
 
+        Write-Host "🚀 Applying Terraform configuration..."
+        terraform apply -auto-approve -no-color
+
+        Write-Host "🎉 Terraform deployment completed successfully!"
